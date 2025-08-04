@@ -2,6 +2,7 @@ from fastapi import FastAPI, File, UploadFile, HTTPException, Request
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
+from urllib.parse import urlparse
 import requests
 import os
 
@@ -40,10 +41,18 @@ async def upload_urls(file: UploadFile = File(...)):
         try:
             response = requests.get(url, timeout=10)
             response.raise_for_status()
-            filename = url.split("/")[-1]
+
+            # Parse path and convert to filename
+            path = urlparse(url).path.lstrip("/")  # remove leading slash
+            filename = path.replace("/", "_")      # replace / with _
+            for ch in ['/', '%', '^', '+', '?', '&', '=', '#', ':', '\\']:
+                filename = filename.replace(ch, '_')
             filepath = images_dir / filename
+
             with open(filepath, "wb") as f:
                 f.write(response.content)
+
+            downloaded += 1
         except Exception as e:
             print(f"Failed to download {url}: {e}")
 
