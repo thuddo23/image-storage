@@ -47,6 +47,9 @@ async def upload_urls(file: UploadFile = File(...)):
             filename = path.replace("/", "_")      # replace / with _
             for ch in ['/', '%', '^', '+', '?', '&', '=', '#', ':', '\\']:
                 filename = filename.replace(ch, '_')
+            # Limit filename to 40 characters
+            if len(filename) > 40:
+                filename = filename[:40]
             filepath = images_dir / filename
 
             with open(filepath, "wb") as f:
